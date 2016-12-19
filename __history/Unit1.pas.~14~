@@ -1,0 +1,111 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.FileCtrl, Vcl.Grids,
+  Vcl.Outline, Vcl.Samples.DirOutln, Vcl.Mask, JvExControls, JvComCtrls,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
+  IdExplicitTLSClientServerBase, IdFTP;
+
+type
+  TForm1 = class(TForm)
+    Button1: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    OpenDialog1: TOpenDialog;
+    JvIPAddress1: TJvIPAddress;
+    IdFTP1: TIdFTP;
+    Button2: TButton;
+
+    procedure FTPFileSend;
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  LocalPath,LocalDir,FTPPath,FTPDir,FTPIP,SearchDir, CurDir, CurFileName,FullLocalName,DateBackup: string;
+  IdFTP1: TIdFTP;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+FTPIP:= JvIPAddress1.Text;
+IdFTP1.Host:=JvIpAddress1.Text;
+IdFTP1.Username:='cent510';
+IdFTP1.Password:='cent510';
+FTPFileSend;
+end;
+
+procedure TForm1.FTPFileSend;
+begin
+  if idFTP1.Connected then
+    begin
+      idFTP1.Disconnect;
+try
+    idFTP1.Connect;
+  except
+    on E : Exception do
+      ShowMessage('Ошибка подключения: '+E.Message);
+  end;
+  if idFTP1.Connected then
+    try
+      idFTP1.ChangeDir(StringReplace(Localdir,'\','/',[rfReplaceAll]));
+      idFTP1.Rename(CurFileName,CurFileName+DateBackup);
+      idFTP1.Put(FullLocalName,CurFileName,true);
+
+    except
+      on E : Exception do
+        ShowMessage('Ошибка выкладывания файла: '+E.Message);
+    end;
+    end
+  else
+  try
+    idFTP1.Connect;
+  except
+    on E : Exception do
+      ShowMessage('Ошибка подключения: '+E.Message);
+  end;
+  if idFTP1.Connected then
+    try
+      idFTP1.ChangeDir(StringReplace(Localdir,'\','/',[rfReplaceAll]));
+      idFTP1.Rename(CurFileName,CurFileName+DateBackup);
+      idFTP1.Put(FullLocalName,CurFileName,true);
+
+         except
+      on E : Exception do
+        ShowMessage('Ошибка выкладывания файла: '+E.Message);
+    end;
+end;
+
+
+
+
+
+
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+OpenDialog1.Execute();
+FullLocalName:= OpenDialog1.FileName;
+CurFileName:=ExtractFileName(FullLocalName);
+LocalPath:=ExtractFilePath(OpenDialog1.FileName);
+LocalDir:=Copy(LocalPath,(Pos('gaia',LocalPath)),length(LocalPath)-(Pos('gaia',LocalPath)))+'\';
+SearchDir:=Copy(LocalPath,1,(Pos('gaia',LocalPath)-1)+4);
+DateTimeToString(DateBackup,'_'+'ddmmyyyy',Now);
+end;
+
+
+
+end.
+

@@ -1,0 +1,105 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.FileCtrl, Vcl.Grids,
+  Vcl.Outline, Vcl.Samples.DirOutln, Vcl.Mask, JvExControls, JvComCtrls,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
+  IdExplicitTLSClientServerBase, IdFTP;
+
+type
+  TForm1 = class(TForm)
+    Button1: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    OpenDialog1: TOpenDialog;
+    JvIPAddress1: TJvIPAddress;
+    IdFTP1: TIdFTP;
+
+    procedure Button1Click(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  LocalPath,LocalDir,FTPPath,FTPDir,FTPIP,SearchDir, CurDir, CurFileName,FullLocalName: string;
+
+implementation
+
+{$R *.dfm}
+
+
+procedure FTPConnect;
+begin
+
+end;
+
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+OpenDialog1.Execute();
+FullLocalName:= OpenDialog1.FileName;
+CurFileName:=ExtractFileName(FullLocalName);
+LocalPath:=ExtractFilePath(OpenDialog1.FileName);
+LocalDir:=Copy(LocalPath,(Pos('gaia',LocalPath)),length(LocalPath)-(Pos('gaia',LocalPath)))+'\';
+SearchDir:=Copy(LocalPath,1,(Pos('gaia',LocalPath)-1)+4);
+FTPIP:= JvIPAddress1.Text;
+//Label1.Caption:= StringReplace(Localdir,'\','/',[rfReplaceAll]);
+Label2.Caption:= SearchDir;
+//IdFTP1.Host:=FTPIP;
+
+IdFTP1.Host:='10.0.17.43';
+IdFTP1.Username:='cent510';
+IdFTP1.Password:='cent510';
+  if idFTP1.Connected then
+    begin
+      idFTP1.Disconnect;
+try
+    idFTP1.Connect;
+  except
+    on E : Exception do
+      ShowMessage('Ошибка подключения: '+E.Message);
+  end;
+  if idFTP1.Connected then
+    try
+      idFTP1.ChangeDir(StringReplace(Localdir,'\','/',[rfReplaceAll]));
+         //CurDir:=idFTP1.RetrieveCurrentDir;
+      idFTP1.Rename(CurFileName,CurFileName+'_back');
+      idFTP1.Put(FullLocalName,CurFileName,true);
+      //idFTP1.Get(CurFileName,'D:/'+CurFileName,true);
+    except
+      on E : Exception do
+        ShowMessage('Ошибка скачивания файла: '+E.Message);
+    end;
+    end
+  else
+  try
+    idFTP1.Connect;
+  except
+    on E : Exception do
+      ShowMessage('Ошибка подключения: '+E.Message);
+  end;
+  if idFTP1.Connected then
+    try
+      idFTP1.ChangeDir(StringReplace(Localdir,'\','/',[rfReplaceAll]));
+      idFTP1.Rename(CurFileName,CurFileName+'_back');
+      idFTP1.Put(FullLocalName,CurFileName,true);
+      //CurDir:=idFTP1.RetrieveCurrentDir;
+      //idFTP1.Get(CurFileName,'D:/'+CurFileName,true);
+         except
+      on E : Exception do
+        ShowMessage('Ошибка скачивания файла: '+E.Message);
+    end;
+
+Label1.Caption:=CurFileName;
+end;
+
+
+end.
+
